@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% from 'input_macro.html' import input %}
+
+{% block title %}
+Edit User
+{% endblock %}
+
+{% block content %}
+<form action="/users/{{user.id}}/edit" method="POST">
+
+    {{ input(name='first_name', label="First Name", value=user.first_name) }}
+    {{ input(name='last_name', label="Last Name", value=user.last_name) }}
+    {{ input(name='image_url', label="Image URL", value=user.image_url) }}
+    <a href="/users/{{user.id}}">Cancel</a>
+    <input type="submit">
+
+</form>
+
+
+{% endblock %}

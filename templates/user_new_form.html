@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'input_macro.html' import input %}
+{% block title %}
+New User
+{% endblock %}
+
+{% block content %}
+
+<h1>CREATE A USER</h1>
+<form action="/users/new" method="POST">
+
+    {{ input(name='first_name', label="First Name") }}
+    {{ input(name='last_name', label="Last Name") }}
+    {{ input(name='image_url', label="Image URL") }}
+
+    <input type="submit">
+</form>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% macro input(name="", type="text", label = None ) %}
+<div class="form-group m-3">
+    {% if label %}
+    <label for="{{ name }}">{{ label }}</label>
+    {% endif %}
+    <input type="{{ type }}" name="{{ name }}" id="{{ name }}" {% for k,v in kwargs.items() %} {{ k }}="{{ v }}" {% endfor
+    %}>
+</div>
+{% endmacro%}

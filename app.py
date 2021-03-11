@@ -12,11 +12,6 @@ app.config['SQLALCHEMY_ECHO'] = True
 connect_db(app)
 db.create_all()
 
-# u = User(first_name="jake", last_name="paulson", image_url="https://www.homepont.com/ehns/pic")
-
-# db.session.add(u)
-# db.session.commit()
-
 
 @app.route('/')
 def home_page():
@@ -31,7 +26,7 @@ def list_of_users():
 
 @app.route('/users/new')
 def new_user_form():
-    return render_template('new_user.html')
+    return render_template('user_new_form.html')
 
 
 @app.route('/users/new', methods=["POST"])
@@ -46,10 +41,32 @@ def submit_new_user():
     return redirect('/')
 
 
-@app.route('users/<int:user_id>')
+@app.route('/users/<int:user_id>')
 def describe_user(user_id):
     user = User.query.get(user_id)
     return render_template('user_description.html', user=user)
+
+
+@app.route('/users/<int:user_id>/edit')
+def edit_user(user_id):
+    user = User.query.get(user_id)
+    return render_template('user_edit_form.html', user=user)
+
+
+@app.route('/users/<int:user_id>/edit', methods=["POST"])
+def submit_changes(user_id):
+    #get the user from the table
+    user = User.query.get(user_id)
+    #update the user info from the form
+    user.first_name = request.form['first_name']
+    user.last_name = request.form['last_name']
+    user.image_url = request.form['image_url']
+
+    db.session.add(user)
+    db.session.commit()
+    return redirect('/users')
+
+
 
 
 
