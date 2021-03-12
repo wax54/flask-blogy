@@ -13,7 +13,7 @@ def connect_db(app):
 
 
 class User(db.Model):
-    """ represents the users table in postgressql"""
+    """Represents a row in the users table in postgressql"""
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
