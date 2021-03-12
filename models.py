@@ -1,6 +1,7 @@
 """Models for Blogly."""
 from flask_sqlalchemy import SQLAlchemy
 
+DEFAULT_IMAGE_URL = "/static/default_user_img.jpg"
 
 db = SQLAlchemy()
 
@@ -24,7 +25,7 @@ class User(db.Model):
         return f"{self.first_name} {self.last_name}"
 
     def update_image(self, image):
-        DEFAULT_IMAGE_URL = "/static/default_user_img.jpg"
+        
         if image:
             self.image_url = image
             return True

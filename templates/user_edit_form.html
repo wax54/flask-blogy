@@ -6,6 +6,7 @@ Edit User
 {% endblock %}
 
 {% block content %}
+<h1>EDIT USER!</h1>
 <form action="/users/{{user.id}}/edit" method="POST">
 
     {{ input(name='first_name', label="First Name", value=user.first_name) }}

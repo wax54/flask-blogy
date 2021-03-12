@@ -61,10 +61,15 @@ def edit_user_form(user_id):
 
 @app.route('/users/<int:user_id>/edit', methods=["POST"])
 def submit_user_edit(user_id):
+    f_name = request.form['first_name']
+    if f_name == '':
+        flash('You must enter a First Name')
+        return redirect(f'/users/{user_id}/edit')
+    
     # get the user from the table
     user = User.query.get(user_id)
     # update the user info from the form
-    user.first_name = request.form['first_name']
+    user.first_name = f_name
     user.last_name = request.form['last_name']
     user.update_image(request.form['image_url'])
 
