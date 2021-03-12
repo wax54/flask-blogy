@@ -30,7 +30,7 @@ def new_user_form():
 
 
 @app.route('/users/new', methods=["POST"])
-def submit_new_user():
+def create_user():
     f_name = request.form['first_name']
     l_name = request.form['last_name']
     image = request.form['image_url']
@@ -44,7 +44,7 @@ def submit_new_user():
 
     db.session.add(new_user)
     db.session.commit()
-    return redirect('/')
+    return redirect('/users')
 
 
 @app.route('/users/<int:user_id>')
@@ -61,6 +61,7 @@ def edit_user_form(user_id):
 
 @app.route('/users/<int:user_id>/edit', methods=["POST"])
 def submit_user_edit(user_id):
+    #if theres no first name, we can't take it
     f_name = request.form['first_name']
     if f_name == '':
         flash('You must enter a First Name')

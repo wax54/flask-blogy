@@ -46,6 +46,15 @@ class NewUserRouteTests(TestCase):
     def test_get_route_returns_correct_page(self):
         self.assertIn('<h1>CREATE A USER</h1>', get_html_from('/users/new'))
 
+    def test_post_route_redirects_to_user_list(self):
+        with app.test_client() as client:
+            res = client.post('/users/new',
+                              data={'first_name': 'John',
+                                    'last_name': 'Doe', 'image_url': 'hello'})
+            self.assertEqual(res.status_code, 302)
+            self.assertEqual(res.location, 'http://localhost/users')
+
+
     def test_post_route_adds_user(self):
         with app.test_client() as client:
             users = User.query.filter_by(
@@ -102,6 +111,18 @@ class EditUserTests(TestCase):
         html = get_html_from(f'/users/{self.sam_id}/edit')
         self.assertIn('<h1>EDIT USER!</h1>', html)
 
+    def test_post_route_redirects_to_user_description_page(self):
+        with app.test_client() as client:
+            res = client.post(f'/users/{self.sam_id}/edit',
+                              data={'first_name': 'John',
+                                    'last_name': 'Doe', 'image_url': 'hello'})
+            self.assertEqual(res.status_code, 302)
+            self.assertEqual(
+                res.location, f'http://localhost/users/{self.sam_id}')
+            res = client.get(res.location)
+            html = res.get_data(as_text=True)
+            self.assertIn('John Doe', html)
+
     def test_post_route_edits_user_info(self):
         with app.test_client() as client:
             benny = User.query.get(self.benny_id)
@@ -144,6 +165,38 @@ class EditUserTests(TestCase):
             self.assertNotEqual(sam.first_name, '')
             #No change was made
             self.assertEqual(sam.first_name, 'Sam')
+
+
+class DeleteUserTests(TestCase):
+    def setUp(self):
+        self.sam_id = add_user_to_db('Sam', 'Crewe-Sullam').id
+        self.benny_id = add_user_to_db('Benny', 'G').id
+        self.toni_id = add_user_to_db(
+            'Toni', '', 'https://mysite.com/myimg.jpg').id
+
+    def tearDown(self):
+        db.drop_all()
+        db.create_all()
+
+    def test_route_deletes_user(self):
+        with app.test_client() as client:
+            res = client.get(
+                f'/users/{self.benny_id}/delete', follow_redirects=True)
+
+            self.assertEqual(res.status_code, 200)
+            benny = User.query.get(self.benny_id)
+            self.assertIsNone(benny)
+
+    def test_post_route_redirects_to_user_list(self):
+        with app.test_client() as client:
+            res = client.get(f'/users/{self.sam_id}/delete')
+
+            self.assertEqual(res.status_code, 302)
+            self.assertEqual(res.location, 'http://localhost/users')
+            res = client.get(res.location)
+            html = res.get_data(as_text=True)
+            self.assertNotIn('Sam Crewe-Sullam', html)
+
 
 
 def add_user_to_db(f, l, img=None):
