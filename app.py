@@ -1,7 +1,8 @@
 """Blogly application."""
-
 from flask import Flask, render_template, request, redirect
 from models import db, connect_db, User
+
+DEFAULT_IMAGE_URL = "/static/default_user_img.jpg"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a secret'
@@ -33,7 +34,7 @@ def new_user_form():
 def submit_new_user():
     f_name = request.form['first_name']
     l_name = request.form['last_name']
-    image = request.form['image_url']
+    image = get_image_from_form_or_default()
     
     new_user = User(first_name=f_name, last_name=l_name, image_url=image)
     db.session.add(new_user)
@@ -48,25 +49,33 @@ def describe_user(user_id):
 
 
 @app.route('/users/<int:user_id>/edit')
-def edit_user(user_id):
+def edit_user_form(user_id):
     user = User.query.get(user_id)
     return render_template('user_edit_form.html', user=user)
 
 
 @app.route('/users/<int:user_id>/edit', methods=["POST"])
-def submit_changes(user_id):
+def submit_user_edit(user_id):
     #get the user from the table
     user = User.query.get(user_id)
     #update the user info from the form
     user.first_name = request.form['first_name']
     user.last_name = request.form['last_name']
-    user.image_url = request.form['image_url']
+    user.image_url = get_image_from_form_or_default()
 
     db.session.add(user)
     db.session.commit()
     return redirect('/users')
 
 
+@app.route('/users/<int:user_id>/delete')
+def delete_user(user_id):
+    user = User.query.filter_by(id=user_id).delete()
+    db.session.commit()
+    return redirect('/users')
 
 
-
+def get_image_from_form_or_default():
+    image = request.form['image_url']
+    image = image if image else DEFAULT_IMAGE_URL
+    return image

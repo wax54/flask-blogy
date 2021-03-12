@@ -13,8 +13,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     first_name  = db.Column(db.TEXT, nullable = False)
     last_name = db.Column(db.TEXT, nullable=True)
-    image_url = db.Column(db.TEXT, nullable=True,
-                          default="default_user_image.jpg")
+    image_url = db.Column(db.TEXT, nullable=True)
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
