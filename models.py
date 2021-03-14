@@ -20,8 +20,7 @@ class User(db.Model):
     first_name = db.Column(db.TEXT, nullable=False)
     last_name = db.Column(db.TEXT, nullable=True)
     image_url = db.Column(db.TEXT, nullable=True, default=DEFAULT_IMAGE_URL)
-
-    
+    posts = db.relationship('Post', backref='creator')
 
     def full_name(self):
         """returns the full name of a user"""
@@ -44,7 +43,6 @@ class Post (db.Model):
     title = db.Column(db.Text, nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False,
-                           server_default=db.func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    creator = db.relationship('User', backref='posts')
+                           server_default=db.func.statement_timestamp())
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete="cascade"))

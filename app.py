@@ -1,6 +1,6 @@
 """Blogly application."""
 from flask import Flask, render_template, request, redirect, flash
-from models import db, connect_db, User
+from models import db, connect_db, User, Post
 
 
 app = Flask(__name__)
@@ -56,7 +56,7 @@ def create_user():
 def describe_user(user_id):
     """Displays info about the specified user"""
     user = User.query.get(user_id)
-    return render_template('user_description.html', user=user)
+    return render_template('user_details.html', user=user)
 
 
 @app.route('/users/<int:user_id>/edit')
@@ -92,6 +92,70 @@ def submit_user_edit(user_id):
 
 @app.route('/users/<int:user_id>/delete')
 def delete_user(user_id):
+    """Deletes the specified user from the DB"""
     user = User.query.filter_by(id=user_id).delete()
     db.session.commit()
     return redirect('/users')
+
+
+@app.route('/users/<int:user_id>/posts/new')
+def new_post_form(user_id):
+    """Shows the New Post Form"""
+    user = User.query.get(user_id)
+    return render_template('post_new_form.html', user=user)
+
+
+@app.route('/users/<int:user_id>/posts/new', methods=["POST"])
+def new_post_submission(user_id):
+    """Submits the new post to the DB"""
+    title = request.form['title']
+    content = request.form['content']
+
+    if title == '' or content == '':
+        flash('Your Post Must Have a Title and Content!')
+        return redirect(f'/users/{user_id}/posts/new')
+    new_post = Post(title=title, content=content, user_id=user_id)
+    db.session.add(new_post)
+    db.session.commit()
+    return redirect(f'/users/{user_id}')
+
+
+@app.route('/posts/<int:post_id>')
+def show_post(post_id):
+    """Displays info about the specified post"""
+    post = Post.query.get(post_id)
+    return render_template('post_details.html', post=post)
+
+
+@app.route('/posts/<int:post_id>/edit')
+def edit_post_form(post_id):
+    """Displays the form to edit the specified post"""
+    post = Post.query.get(post_id)
+    return render_template('post_edit_form.html', post=post)
+
+
+@app.route('/posts/<int:post_id>/edit', methods=["POST"])
+def edit_post_submission(post_id):
+    """updates the specified post to use the newly submitted data"""
+    title = request.form['title']
+    content = request.form['content']
+
+    if title == '' or content == '':
+        flash('Your Post Must Have a Title and Content!')
+        return redirect(f'/posts/{post_id}/edit')
+    post = Post.query.get(post_id)
+    print(post.id, post.title)
+    post.title = title
+    post.content = content
+
+    db.session.add(post)
+    db.session.commit()
+    return redirect(f'/posts/{post_id}')
+
+
+@app.route('/posts/<int:post_id>/delete')
+def delete_post(post_id):
+    """Deletes the specified post from the DB"""
+    post = Post.query.filter_by(id=post_id).delete()
+    db.session.commit()
+    return redirect('/')

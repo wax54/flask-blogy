@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'input_macro.html' import input %}
+
+{% block title %}
+Edit Post
+{% endblock %}
+
+{% block content %}
+<h1>EDIT POST!</h1>
+
+<h1>{{post.creator.first_name}} is Editing a post!</h1>
+<form action="/posts/{{post.id}}/edit" method="POST">
+    {{ input(name='title', label="Title", value=post.title) }}
+    {{ input(name='content', label="Content", value=post.content) }}
+    <a href="/users/{{post.id}}">Cancel</a>
+    <input type="submit">
+</form>
+{% endblock %}

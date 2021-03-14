@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% from 'input_macro.html' import input %}
+{% block title %}
+New Post
+{% endblock %}
+
+{% block content %}
+
+<h1>{{user.first_name}} is making a post!</h1>
+<form action="/users/{{user.id}}/posts/new" method="POST">
+    {{ input(name='title', label="Title") }}
+    {{ input(name='content', label="Content") }}
+    <input type="submit">
+</form>
+
+
+
+
+{% endblock %}

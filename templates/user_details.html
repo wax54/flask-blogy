@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}
+{{user.full_name()}}
+{% endblock %}
+
+{% block content %}
+<h1>{{user.full_name()}}</h1>
+<img src="{{user.image_url}}" alt="Probably something cool, if only the URL had worked..." width="200">
+<div>
+    <a class="btn" href="/">GO HOME</a>
+    <a class="btn" href="/users/{{user.id}}/edit">EDIT USER</a>
+    <a class="btn" href="/users/{{user.id}}/delete">DELETE USER</a>
+</div>
+
+<h2>POSTS <a class="btn" href="/users/{{user.id}}/posts/new">Create a New Post!</a></h2>
+{% if user.posts %}
+<ul>
+    {% for post in user.posts %}
+    <li><a href="/posts/{{post.id}}">
+            {{post.title}}
+        </a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<h4>No Posts Yet!</h4>
+{% endif %}
+
+{% endblock %}
