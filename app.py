@@ -144,7 +144,6 @@ def edit_post_submission(post_id):
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/posts/{post_id}/edit')
     post = Post.query.get(post_id)
-    print(post.id, post.title)
     post.title = title
     post.content = content
 
