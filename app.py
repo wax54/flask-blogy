@@ -10,6 +10,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 
 connect_db(app)
+db.drop_all()
 db.create_all()
 
 
@@ -101,7 +102,7 @@ def delete_user(user_id):
 @app.route('/users/<int:user_id>/posts/new')
 def new_post_form(user_id):
     """Shows the New Post Form"""
-    user = User.query.get(user_id)
+    user = User.query.get_or_404(user_id)
     return render_template('post_new_form.html', user=user)
 
 
@@ -123,14 +124,14 @@ def new_post_submission(user_id):
 @app.route('/posts/<int:post_id>')
 def show_post(post_id):
     """Displays info about the specified post"""
-    post = Post.query.get(post_id)
+    post = Post.query.get_or_404(post_id)
     return render_template('post_details.html', post=post)
 
 
 @app.route('/posts/<int:post_id>/edit')
 def edit_post_form(post_id):
     """Displays the form to edit the specified post"""
-    post = Post.query.get(post_id)
+    post = Post.query.get_or_404(post_id)
     return render_template('post_edit_form.html', post=post)
 
 
@@ -143,7 +144,7 @@ def edit_post_submission(post_id):
     if title == '' or content == '':
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/posts/{post_id}/edit')
-    post = Post.query.get(post_id)
+    post = Post.query.get_or_404(post_id)
     post.title = title
     post.content = content
 
@@ -158,3 +159,8 @@ def delete_post(post_id):
     post = Post.query.filter_by(id=post_id).delete()
     db.session.commit()
     return redirect('/')
+
+
+
+
+
