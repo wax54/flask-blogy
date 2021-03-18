@@ -9,6 +9,12 @@
 <h3>{{post.content}}</h3>
 <h3>By {{post.creator.full_name()}}</h3>
 
+<div class="tag-line">
+    <span class="tag-header">Tags!</span>
+    {% for tag in post.tags %}
+    <span class="tag"><a href="/tags/{{tag.id}}">{{tag.name}}</a></span>
+    {% endfor %}
+</div>
 
 <div>
     <a href="/">GO HOME</a>

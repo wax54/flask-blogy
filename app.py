@@ -1,6 +1,6 @@
 """Blogly application."""
 from flask import Flask, render_template, request, redirect, flash
-from models import db, connect_db, User, Post
+from models import db, connect_db, User, Post, Tag
 
 
 app = Flask(__name__)
@@ -10,8 +10,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 
 connect_db(app)
-db.drop_all()
-db.create_all()
+# db.drop_all()
+# db.create_all()
 
 
 @app.route('/')
@@ -40,30 +40,26 @@ def create_user():
     f_name = request.form['first_name']
     l_name = request.form['last_name']
     image = request.form['image_url']
-    #first name is required
+    # first name is required
     if f_name == '':
         flash('You must enter a First Name')
         return redirect('/users/new')
-    
-    new_user = User(first_name=f_name, last_name=l_name)
-    new_user.update_image(image)
-
-    db.session.add(new_user)
-    db.session.commit()
-    return redirect('/users')
+    else:
+        User.add(f_name, l_name, image)
+        return redirect('/users')
 
 
 @app.route('/users/<int:user_id>')
 def describe_user(user_id):
     """Displays info about the specified user"""
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     return render_template('user_details.html', user=user)
 
 
 @app.route('/users/<int:user_id>/edit')
 def edit_user_form(user_id):
     """shows the form that, when submitted, will update a user in the DB"""
-    user = User.query.get(user_id)
+    user = User.get(user_id)
     return render_template('user_edit_form.html', user=user)
 
 
@@ -72,38 +68,32 @@ def submit_user_edit(user_id):
     """Attepmts to update the info of the user with an id of user_id.
     uses the passed in POST request data
     Redirects to the describe user if successful """
-    #if theres no first name, we can't take it
-    f_name = request.form['first_name']
-    if f_name == '':
+    # if theres no first name, we can't take it
+    f_name = request.form.get('first_name')
+    l_name = request.form.get('last_name')
+    image = request.form.get('image_url')
+
+    if not f_name:
         flash('You must enter a First Name')
         return redirect(f'/users/{user_id}/edit')
-    
-    # get the user from the table
-    user = User.query.get(user_id)
-    # update the user info from the form
-    user.first_name = f_name
-    user.last_name = request.form['last_name']
-    user.update_image(request.form['image_url'])
-
-    db.session.add(user)
-    db.session.commit()
-
-    return redirect(f'/users/{user_id}')
+    else:
+        User.update_by_id(user_id, f_name, l_name, image)
+        return redirect(f'/users/{user_id}')
 
 
 @app.route('/users/<int:user_id>/delete')
 def delete_user(user_id):
     """Deletes the specified user from the DB"""
-    user = User.query.filter_by(id=user_id).delete()
-    db.session.commit()
+    User.delete_by_id(user_id)
     return redirect('/users')
 
 
 @app.route('/users/<int:user_id>/posts/new')
 def new_post_form(user_id):
     """Shows the New Post Form"""
-    user = User.query.get_or_404(user_id)
-    return render_template('post_new_form.html', user=user)
+    user = User.get(user_id)
+    tags = Tags.get_all()
+    return render_template('post_new_form.html', user=user, tags=tags)
 
 
 @app.route('/users/<int:user_id>/posts/new', methods=["POST"])
@@ -115,23 +105,23 @@ def new_post_submission(user_id):
     if title == '' or content == '':
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/users/{user_id}/posts/new')
-    new_post = Post(title=title, content=content, user_id=user_id)
-    db.session.add(new_post)
-    db.session.commit()
-    return redirect(f'/users/{user_id}')
+    else:
+        Post.add(title, content, user_id)
+        return redirect(f'/users/{user_id}')
 
 
 @app.route('/posts/<int:post_id>')
 def show_post(post_id):
     """Displays info about the specified post"""
-    post = Post.query.get_or_404(post_id)
+    post = Post.get(post_id)
+
     return render_template('post_details.html', post=post)
 
 
 @app.route('/posts/<int:post_id>/edit')
 def edit_post_form(post_id):
     """Displays the form to edit the specified post"""
-    post = Post.query.get_or_404(post_id)
+    post = Post.get(post_id)
     return render_template('post_edit_form.html', post=post)
 
 
@@ -144,21 +134,91 @@ def edit_post_submission(post_id):
     if title == '' or content == '':
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/posts/{post_id}/edit')
-    post = Post.query.get_or_404(post_id)
-    post.title = title
-    post.content = content
-
-    db.session.add(post)
-    db.session.commit()
+    Post.update_by_id(post_id, title, content)
     return redirect(f'/posts/{post_id}')
 
 
 @app.route('/posts/<int:post_id>/delete')
 def delete_post(post_id):
     """Deletes the specified post from the DB"""
-    post = Post.query.filter_by(id=post_id).delete()
-    db.session.commit()
+    post = Post.delete_by_id(post_id)
     return redirect('/')
+
+
+@app.route('/tags')
+def list_tags():
+    """Lists all the tags"""
+    tags = Tag.query.all()
+    return render_template('tag_list.html', tags=tags)
+
+
+@app.route('/tags/<int:tag_id>')
+def describe_tags(tag_id):
+    """Lists the posts assosiated with the tag"""
+    tag = Tag.get(tag_id)
+    return render_template('tag_details.html', tag=tag)
+
+
+@app.route('/tags/<int:tag_id>/delete')
+def delete_tag(tag_id):
+    """deletes the specified tag"""
+    Tag.delete_by_id(tag_id)
+    return redirect('/tags')
+
+
+@app.route('/tags/new')
+def new_tag_form():
+    """displays the form to add a new tag"""
+    return render_template('tag_new_form.html')
+
+
+@app.route('/tags/new', methods=["POST"])
+def new_tag_submission():
+    """Submits the new tag to the DB"""
+    name = request.form['name']
+    if name == '':
+        flash('Your tag must have a name!')
+        return redirect(f'/tags/new')
+    else:
+        try:
+            Tag.add(name)
+            return redirect(f'/tags')
+        except:
+            flash('I think We already got that Tag!')
+            return redirect(f'/tags/new')
+
+
+@app.route('/tags/<int:tag_id>/edit')
+def edit_tag_form(tag_id):
+    """displays the form to edit the tag"""
+    return render_template("tag_edit_form.html", tag=Tag.get(tag_id))
+
+
+@app.route('/tags/<int:tag_id>/edit', methods=["POST"])
+def edit_tag_submission(tag_id):
+    """Process edit form, edit tag, and redirects to the tags list."""
+
+    tag = Tag.get(tag_id)
+    new_name = request.form.get('name')
+    if not new_name:
+        flash('Your tag must have a name!')
+        return redirect(f'/tags/{tag_id}/edit')
+    else:
+        try:
+            tag.update_name(new_name)
+            return redirect(f'/tags')
+        except:
+            flash("That um.. didnt work...")
+            return redirect(f'/tags/{tag_id}/edit')
+
+
+
+
+
+
+
+
+
 
 
 

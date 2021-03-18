@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'input_macro.html' import input %}
+{% block title %}
+New Tag!
+{% endblock %}
+
+{% block content %}
+
+<h1>New Tag!</h1>
+<form action="/tags/new" method="POST">
+    {{ input(name='name', placeholder="Enter a New Tag Name", label="Name") }}
+    <input type="submit">
+</form>
+
+{% endblock %}
