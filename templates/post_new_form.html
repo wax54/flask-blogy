@@ -10,6 +10,9 @@ New Post
 <form action="/users/{{user.id}}/posts/new" method="POST">
     {{ input(name='title', label="Title") }}
     {{ input(name='content', label="Content") }}
+    {% for tag in tags %}
+    {{ input(type="checkbox", name='tag_'~tag.id, label=tag.name) }}
+    {% endfor %}
     <input type="submit">
 </form>
 

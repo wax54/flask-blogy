@@ -12,6 +12,13 @@ Edit Post
 <form action="/posts/{{post.id}}/edit" method="POST">
     {{ input(name='title', label="Title", value=post.title) }}
     {{ input(name='content', label="Content", value=post.content) }}
+{% for tag in tags %}
+{% if tag in post.tags %}
+{{ input(type="checkbox", name='tag_'~tag.id, label=tag.name, checked='true') }}
+{% else %}
+{{ input(type="checkbox", name='tag_'~tag.id, label=tag.name) }}
+{% endif %}
+{% endfor %}
     <a href="/users/{{post.id}}">Cancel</a>
     <input type="submit">
 </form>

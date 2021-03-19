@@ -1,6 +1,6 @@
 """Blogly application."""
 from flask import Flask, render_template, request, redirect, flash
-from models import db, connect_db, User, Post, Tag
+from models import db, connect_db, User, Post, Tag, update_tags
 
 
 app = Flask(__name__)
@@ -92,22 +92,27 @@ def delete_user(user_id):
 def new_post_form(user_id):
     """Shows the New Post Form"""
     user = User.get(user_id)
-    tags = Tags.get_all()
+    tags = Tag.get_all()
     return render_template('post_new_form.html', user=user, tags=tags)
 
 
 @app.route('/users/<int:user_id>/posts/new', methods=["POST"])
 def new_post_submission(user_id):
     """Submits the new post to the DB"""
-    title = request.form['title']
-    content = request.form['content']
+    post_dict = process_post_form(request.form)
 
-    if title == '' or content == '':
+    if post_dict['title']:
+        title = post_dict['title']
+        content = post_dict['content']
+        post = Post.add(title, content, user_id)
+
+        tags = post_dict['tags']
+        update_tags(post.id, tags)
+
+        return redirect(f'/users/{user_id}')
+    else:
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/users/{user_id}/posts/new')
-    else:
-        Post.add(title, content, user_id)
-        return redirect(f'/users/{user_id}')
 
 
 @app.route('/posts/<int:post_id>')
@@ -122,20 +127,26 @@ def show_post(post_id):
 def edit_post_form(post_id):
     """Displays the form to edit the specified post"""
     post = Post.get(post_id)
-    return render_template('post_edit_form.html', post=post)
+    tags = Tag.get_all()
+    return render_template('post_edit_form.html', post=post, tags=tags)
 
 
 @app.route('/posts/<int:post_id>/edit', methods=["POST"])
 def edit_post_submission(post_id):
     """updates the specified post to use the newly submitted data"""
-    title = request.form['title']
-    content = request.form['content']
 
-    if title == '' or content == '':
+    post_dict = process_post_form(request.form)
+
+    if post_dict['title']:
+        title = post_dict['title']
+        content = post_dict['content']
+        tags = post_dict['tags']
+
+        Post.update_by_id(post_id, title, content, tags)
+        return redirect(f'/posts/{post_id}')
+    else:
         flash('Your Post Must Have a Title and Content!')
         return redirect(f'/posts/{post_id}/edit')
-    Post.update_by_id(post_id, title, content)
-    return redirect(f'/posts/{post_id}')
 
 
 @app.route('/posts/<int:post_id>/delete')
@@ -212,15 +223,18 @@ def edit_tag_submission(tag_id):
             return redirect(f'/tags/{tag_id}/edit')
 
 
+def process_post_form(form):
+    title = form.get('title').strip()
+    content = form.get('content').strip()
 
-
-
-
-
-
-
-
-
-
-
-
+    if not title or not content:
+        return False
+    else:
+        post = {'title': title, 'content': content}
+        all_tags = Tag.get_all()
+        post_tags = []
+        for tag in all_tags:
+            if form.get(f'tag_{tag.id}') == 'on':
+                post_tags.append(tag.id)
+        post['tags'] = post_tags
+        return post

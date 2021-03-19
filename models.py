@@ -12,8 +12,6 @@ def connect_db(app):
     db.init_app(app)
 
 
-
-
 class User(db.Model):
     """Represents a row in the users table in postgressql"""
     __tablename__ = 'users'
@@ -93,12 +91,13 @@ class Post (db.Model):
         return cls.query.get_or_404(p_id)
 
     @classmethod
-    def update_by_id(cls, post_id, title, content):
+    def update_by_id(cls, post_id, title, content, tags):
         # get the post from the table
         post = cls.get(post_id)
         # update the post info from the form
         post.title = title
         post.content = content
+        update_tags(post_id, tags)
         update_db(post)
         return post
 
@@ -153,8 +152,24 @@ class PostTag(db.Model):
     __tablename__ = 'posts_tags'
 
     post_id = db.Column(db.Integer, db.ForeignKey(
-        'posts.id'), primary_key=True)
-    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+        'posts.id', ondelete='cascade'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey(
+        'tags.id', ondelete='cascade'), primary_key=True)
+
+
+def update_tags(post_id, new_tags):
+    current_tags = db.session.query(
+        PostTag.tag_id).filter_by(post_id=post_id).all()
+    curr_tags = [tag[0] for tag in current_tags]
+
+    tags_to_add = set(new_tags) - set(curr_tags)
+    tags_to_remove = set(curr_tags) - set(new_tags)
+    for tag_id in tags_to_add:
+        post_tag = PostTag(post_id=post_id, tag_id=tag_id)
+        db.session.add(post_tag)
+    for tag_id in tags_to_remove:
+        PostTag.query.filter_by(post_id=post_id, tag_id=tag_id).delete()
+    db.session.commit()
 
 
 def update_db(db_obj):
