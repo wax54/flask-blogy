@@ -6,7 +6,7 @@ from models.Tag import Tag
 tag_views = Blueprint('tag_views', __name__)
 
 
-@tag_views.route('/')
+@tag_views.route('')
 def list_tags():
     """Lists all the tags"""
     tags = Tag.query.all()
@@ -60,7 +60,7 @@ def edit_tag_submission(tag_id):
     """Process edit form, edit tag, and redirects to the tags list."""
 
     tag = Tag.get(tag_id)
-    new_name = request.form.get('name')
+    new_name = request.form.get('name').strip()
     if not new_name:
         flash('Your tag must have a name!')
         return redirect(f'/tags/{tag_id}/edit')

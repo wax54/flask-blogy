@@ -1,4 +1,4 @@
-from models import db, DEFAULT_IMAGE_URL, BasicOperations
+from models import db, DEFAULT_IMAGE_URL, update_db, BasicOperations
 from models.Post import Post
 from models.PostTag import PostTag
 

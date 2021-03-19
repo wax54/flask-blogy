@@ -1,17 +1,8 @@
 from unittest import TestCase
+from tests import get_html_from, app
 from models import db, connect_db, DEFAULT_IMAGE_URL
 from models.Post import Post
 from models.User import User
-from app import app
-
-app.config['TESTING'] = True
-app.config['SQLALCHEMY_ECHO'] = False
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///test_blogly'
-
-connect_db(app)
-db.drop_all()
-db.create_all()
 
 
 class UserListRouteTests(TestCase):
@@ -227,19 +218,19 @@ class EditPostTests(TestCase):
             res = client.get(f'/posts/10/edit')
             self.assertEqual(res.status_code, 404)
 
-
     def test_post_route_edits_post_info(self):
         with app.test_client() as client:
             post = Post.query.get(self.p1_id)
             self.assertEqual(post.title, 'SuperCool')
             res = client.post(f'/posts/{self.p1_id}/edit',
-                            data={'title': 'A Different Title',
+                              data={'title': 'A Different Title',
                                     'content': 'Different Content'},
-                            follow_redirects=True)
+                              follow_redirects=True)
             self.assertEqual(res.status_code, 200)
             post = Post.query.get(self.p1_id)
             self.assertEqual(post.title, 'A Different Title')
             self.assertEqual(post.content, 'Different Content')
+
 
 class ViewPostTests(TestCase):
     def setUp(self):
@@ -259,7 +250,7 @@ class ViewPostTests(TestCase):
             p1 = Post.query.get(self.p1_id)
             self.assertIn(p1.title, html)
             self.assertIn(p1.content, html)
-            
+
     def test_route_returns_404_if_no_post(self):
         with app.test_client() as client:
             res = client.get(f'/posts/10')
@@ -281,7 +272,7 @@ class CreatePostTests(TestCase):
         with app.test_client() as client:
             res = client.get(f'/users/{self.u_id}/posts/new')
             self.assertEqual(res.status_code, 200)
-            
+
             html = res.get_data(as_text=True)
             user = User.query.get(self.u_id)
             self.assertIn(f'{user.first_name} is making a post', html)
@@ -290,14 +281,15 @@ class CreatePostTests(TestCase):
         with app.test_client() as client:
             res = client.get(f'/users/10/posts/new')
             self.assertEqual(res.status_code, 404)
-    
+
     def test_post_route_redirects_to_user_details(self):
         with app.test_client() as client:
             res = client.post(f'/users/{self.u_id}/posts/new',
                               data={'title': 'New',
                                     'content': 'New post content!'})
             self.assertEqual(res.status_code, 302)
-            self.assertEqual(res.location, f'http://localhost/users/{self.u_id}')
+            self.assertEqual(
+                res.location, f'http://localhost/users/{self.u_id}')
 
     def test_post_route_adds_post(self):
         post = Post.query.filter_by(
@@ -309,13 +301,13 @@ class CreatePostTests(TestCase):
                               data={'title': 'New',
                                     'content': 'New post content!'},
                               follow_redirects=True)
-            
+
             self.assertEqual(res.status_code, 200)
-            
+
             post = Post.query.filter_by(
-                title='New',content='New post content!').first()
+                title='New', content='New post content!').first()
             self.assertEqual(post.user_id, self.u_id)
-        
+
 
 def add_post_to_db(t, c, u_id):
     test_post = Post(title=t, content=c, user_id=u_id)
@@ -329,9 +321,3 @@ def add_user_to_db(f, l, img=None):
     db.session.add(test_user)
     db.session.commit()
     return test_user.id
-
-
-def get_html_from(path):
-    with app.test_client() as client:
-        res = client.get(path, follow_redirects=True)
-        return res.get_data(as_text=True)
