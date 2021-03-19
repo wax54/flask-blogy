@@ -9,6 +9,7 @@ New Tag!
 <h1>Edit Tag "{{tag.name}}"!</h1>
 <form action="/tags/{{tag.id}}/edit" method="POST">
     {{ input(name='name',value=tag.name, label="Name") }}
+    <a href="/tags/{{tag.id}}"></a>
     <input type="submit">
 </form>
 

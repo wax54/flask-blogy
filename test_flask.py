@@ -331,5 +331,5 @@ def add_user_to_db(f, l, img=None):
 
 def get_html_from(path):
     with app.test_client() as client:
-        res = client.get(path)
+        res = client.get(path, follow_redirects=True)
         return res.get_data(as_text=True)
