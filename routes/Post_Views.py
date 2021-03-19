@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, flash
-from models import User, Post, Tag
+from models.User import User
+from models.Post import Post
+from models.Tag import Tag
+
 
 post_views = Blueprint('post_views', __name__)
 

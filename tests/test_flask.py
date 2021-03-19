@@ -1,5 +1,7 @@
 from unittest import TestCase
-from models import db, connect_db, User, DEFAULT_IMAGE_URL, Post
+from models import db, connect_db, DEFAULT_IMAGE_URL
+from models.Post import Post
+from models.User import User
 from app import app
 
 app.config['TESTING'] = True
