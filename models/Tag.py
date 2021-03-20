@@ -8,7 +8,6 @@ class Tag(db.Model, BasicOperations):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False, unique=True)
-    posts = db.relationship("Post", secondary="posts_tags", backref="tags")
 
     def update_name(self, val):
         self.name = val

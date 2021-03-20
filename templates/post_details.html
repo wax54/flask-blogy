@@ -7,7 +7,7 @@
 
 <h1>{{post.title}}</h1>
 <h3>{{post.content}}</h3>
-<h3>By {{post.creator.full_name()}}</h3>
+<h3>By <a href="/users/{{post.creator.id}}">{{post.creator.full_name()}}</a></h3>
 
 <div class="tag-line">
     <span class="tag-header">Tags!</span>

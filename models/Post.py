@@ -13,6 +13,8 @@ class Post (db.Model, BasicOperations):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'users.id', ondelete="cascade"))
 
+    tags = db.relationship("Tag", secondary="posts_tags", backref="posts")
+
     def update_tags(self, new_tags):
         post_id = self.id
         current_tags = db.session.query(
@@ -27,6 +29,12 @@ class Post (db.Model, BasicOperations):
         for tag_id in tags_to_remove:
             PostTag.query.filter_by(post_id=post_id, tag_id=tag_id).delete()
         db.session.commit()
+
+    @classmethod
+    def get_last(cls, limit=1):
+        posts = db.session.query(Post).order_by(
+            Post.created_at.desc()).limit(limit).all()
+        return posts
 
     @classmethod
     def add(cls, title, content, user_id):
