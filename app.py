@@ -15,7 +15,7 @@ app.config['SQLALCHEMY_ECHO'] = True
 
 connect_db(app)
 # db.drop_all()
-db.create_all()
+# db.create_all()
 
 app.register_blueprint(main_views)
 app.register_blueprint(user_views, url_prefix='/users')
